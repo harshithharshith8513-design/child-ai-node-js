@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: childguard-ai
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: DATABASE_PATH
+        value: /data/db.sqlite3
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false
+    disk:
+      name: database-volume
+      mountPath: /data
+      sizeGB: 1

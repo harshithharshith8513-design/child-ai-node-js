@@ -2,7 +2,16 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const dbPath = path.join(__dirname, 'db.sqlite3');
+const fs = require('fs');
+
+const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'db.sqlite3');
+
+// Ensure parent directory exists
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
+
 const db = new sqlite3.Database(dbPath);
 
 // Helper to run query and return Promise
