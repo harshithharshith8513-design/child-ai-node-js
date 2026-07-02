@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Website Restricted | ChildGuard AI</title>
+  <style>
+    :root {
+      --cyber-purple: #8b5cf6;
+      --cyber-cyan: #d946ef;
+      --cyber-dark: #09070f;
+      --cyber-darker: #05040a;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--cyber-dark);
+      color: var(--text-main);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Background glows */
+    .glow-violet {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 50vw;
+      height: 50vw;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.1);
+      filter: blur(120px);
+      z-index: -1;
+    }
+    .glow-fuchsia {
+      position: absolute;
+      bottom: -10%;
+      right: -10%;
+      width: 50vw;
+      height: 50vw;
+      border-radius: 50%;
+      background: rgba(217, 70, 239, 0.1);
+      filter: blur(120px);
+      z-index: -1;
+    }
+    /* Glassmorphism panel */
+    .panel {
+      width: 90%;
+      max-width: 500px;
+      background: rgba(15, 10, 25, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 0 50px -15px rgba(217, 70, 239, 0.25);
+      position: relative;
+    }
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--cyber-purple), var(--cyber-cyan));
+      border-radius: 24px 24px 0 0;
+    }
+    .icon-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: rgba(217, 70, 239, 0.1);
+      color: var(--cyber-cyan);
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.5px;
+    }
+    p {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 0 0 24px 0;
+    }
+    .video-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      background-color: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 20px;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-cover: cover;
+      transform: scaleX(-1);
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1);
+      pointer-events: none;
+    }
+    .loader-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 4, 10, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      border-radius: 16px;
+    }
+    .loader-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--cyber-cyan);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .loader-text {
+      color: var(--cyber-cyan);
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+    .btn {
+      flex: 1;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, var(--cyber-purple), var(--cyber-cyan));
+      color: #fff;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    .status {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-violet"></div>
+  <div class="glow-fuchsia"></div>
+
+  <div class="panel">
+    <div class="icon-wrapper">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+
+    <h1>Access Restricted</h1>
+    <p>This domain (<span id="target-domain">domain</span>) is blocked by ChildGuard AI. A parent or guardian must verify their face scan credentials to unlock this tab temporarily.</p>
+
+    <div class="video-container">
+      <video id="scanVideo" autoplay muted playsinline></video>
+      <canvas id="scanCanvas"></canvas>
+      
+      <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+        <div id="loaderText" class="loader-text">Initializing AI Engine...</div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button id="startCamBtn" class="btn btn-secondary">Start Camera</button>
+      <button id="scanBtn" class="btn btn-primary" disabled>Scan & Unlock</button>
+    </div>
+
+    <div id="status" class="status">AI engine loading...</div>
+  </div>
+
+  <!-- Load Human AI library -->
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/human.js"></script>
+  <script src="blocked.js"></script>
+</body>
+</html>

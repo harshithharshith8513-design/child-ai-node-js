@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+
+{% block title %}Guardian Dashboard | ChildGuard AI{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="section-shell py-14">
+        <span class="eyebrow">Real-Time Telemetry Control</span>
+        <h1 class="section-title">Guardian Dashboard</h1>
+        <p class="section-copy">Command center for tracking child locations, triggering emergency sirens, dispatching safety notification templates, and activating a full-screen tactical HUD.</p>
+    </div>
+</section>
+
+<section class="section-shell">
+    <div class="grid gap-8 lg:grid-cols-[1fr_.6fr] items-start">
+        
+        <!-- Left Side: Dashboard Actions Panel -->
+        <div id="dashboard-panel" class="grid gap-6 md:grid-cols-2">
+            <!-- GPS Location Card -->
+            <article class="action-card">
+                <span class="icon-chip">GPS</span>
+                <h2>Child GPS Telemetry</h2>
+                <p>Ping the child's active terminal to request real-time approximate coordinates and display the results securely on Google Maps.</p>
+                <button id="get-location" type="button" class="btn-primary mt-6">Ping Child Device</button>
+                <div id="location-status" class="status-box" role="status" aria-live="polite">Telemetry connection idle.</div>
+                <div id="map-wrapper" class="mt-5 hidden overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-lg">
+                    <iframe id="location-map" class="h-64 w-full border-0" title="Current device location on Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </article>
+
+            <!-- Parent Notification Card -->
+            <article class="action-card">
+                <span class="icon-chip">!</span>
+                <h2>Safety Alert Dispatcher</h2>
+                <p>Simulate incoming urgent safety notifications triggered by the child's device behavior on this control terminal.</p>
+                <label for="notification-type" class="form-label mt-5">Select alert scenario
+                    <select id="notification-type" class="form-input">
+                        <option value="Screen-time limit reached. Please review the child's device activity.">Screen-time limit reached</option>
+                        <option value="An unsafe website attempt was detected. Please check the device.">Unsafe website attempt</option>
+                        <option value="The child's current location needs your attention.">Location needs attention</option>
+                        <option value="A new or unusual contact interaction was detected.">Unusual contact activity</option>
+                        <option value="custom">Custom notification</option>
+                    </select>
+                </label>
+                <label id="custom-notification-wrap" for="custom-notification" class="form-label mt-4 hidden">Custom message
+                    <textarea id="custom-notification" class="form-input min-h-24 resize-y" maxlength="180" placeholder="Enter the notification message"></textarea>
+                </label>
+                <button id="send-alert" type="button" class="btn-primary mt-6">Simulate Child Alert</button>
+                <div id="notification-status" class="status-box" role="status" aria-live="polite">No simulation dispatched.</div>
+            </article>
+
+            <!-- Audible Alarm Card -->
+            <article class="action-card">
+                <span class="icon-chip">SFX</span>
+                <h2>Remote Siren Trigger</h2>
+                <p>Deploy an acoustic locational sound beacon on the child's device to locate them in immediate surroundings.</p>
+                <button id="play-alarm" type="button" class="btn-primary mt-6">Activate Siren</button>
+                <div id="alarm-status" class="status-box" role="status" aria-live="polite">Siren stand-by.</div>
+            </article>
+
+            <!-- Focused View Card -->
+            <article class="action-card">
+                <span class="icon-chip">FS</span>
+                <h2>Tactical HUD Console</h2>
+                <p>Initialize a distraction-free monitoring HUD in fullscreen mode to prioritize tracking telemetry.</p>
+                <button id="open-fullscreen" type="button" class="btn-primary mt-6">Initialize HUD</button>
+                <div id="fullscreen-status" class="status-box" role="status" aria-live="polite">HUD terminal inactive.</div>
+            </article>
+
+            <!-- URL Blacklist Card -->
+            <article class="action-card">
+                <span class="icon-chip"><i data-lucide="shield-alert" class="h-4.5 w-4.5"></i></span>
+                <h2>URL Blacklist Filter</h2>
+                <p>Prevent the child's device from loading specific websites. The synced extension will block access in all browsers.</p>
+                
+                <form id="block-url-form" class="mt-5 space-y-4">
+                    <div class="flex gap-2">
+                        <input type="text" id="blocked-domain-input" required class="form-input flex-1 !mt-0" placeholder="e.g. facebook.com">
+                        <button type="submit" class="btn-primary py-2 px-4 text-xs font-bold font-display uppercase tracking-wider">Block</button>
+                    </div>
+                </form>
+
+                <div class="mt-6">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Currently Blocked</h3>
+                    <div id="blocked-domains-list" class="space-y-2 max-h-40 overflow-y-auto bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+                        <div class="text-xs text-slate-500 italic text-center py-2">No domains blocked.</div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Right Side: 3D Monitor & Important Warnings -->
+        <div class="space-y-6">
+            <!-- 3D WebGL Monitoring Net -->
+            <div class="panel-card relative overflow-hidden flex flex-col justify-center items-center text-center p-6 border border-slate-800">
+                <div class="absolute w-[200px] h-[200px] bg-violet-500/10 rounded-full blur-[60px] -z-10 animate-pulse"></div>
+                <h3 class="text-sm font-bold text-white font-display uppercase tracking-wider mb-2">Live Radar Safety Mesh</h3>
+                
+                <!-- 3D Canvas -->
+                <div id="dashboard-canvas-container" class="w-full h-[260px] cursor-grab active:cursor-grabbing"></div>
+                
+                <p class="text-[10px] text-slate-500 font-mono mt-2">ACTIVE NODES REPRESENTING SECURED PORTS & SIGNALS</p>
+            </div>
+
+            <!-- Important Alerts / Sidebar Warnings -->
+            <aside class="rounded-3xl border border-fuchsia-900/30 bg-fuchsia-950/20 p-6 text-sm leading-6 text-fuchsia-300 shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 h-1.5 left-0 bg-gradient-to-r from-violet-600 to-fuchsia-500"></div>
+                <strong class="text-white font-display block mb-1">Enterprise Telemetry Sandbox</strong>
+                This dashboard provides live telemetry simulation. Geolocation tracking and notification loops operate within high-security offline sandboxes to protect family identity integrity.
+            </aside>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/geolocation.js" defer></script>
+<script src="/static/js/notification.js" defer></script>
+<script src="/static/js/fullscreen.js" defer></script>
+
+<script>
+    // Three.js Radar Monitoring Net for Dashboard
+    const container = document.getElementById('dashboard-canvas-container');
+    if (container) {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.set(0, 3, 5);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // Grid/Mesh floor representing radar
+        const size = 6;
+        const divisions = 14;
+        const gridHelper = new THREE.GridHelper(size, divisions, 0xd946ef, 0x8b5cf6);
+        gridHelper.material.opacity = 0.25;
+        gridHelper.material.transparent = true;
+        scene.add(gridHelper);
+
+        // Pulse scanning circle
+        const ringGeom = new THREE.RingGeometry(0.1, 0.15, 32);
+        const ringMat = new THREE.MeshBasicMaterial({
+            color: 0xd946ef,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+        const ring = new THREE.Mesh(ringGeom, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        scene.add(ring);
+
+        // Nodes coordinates
+        const nodeCount = 5;
+        const nodeGeom = new THREE.SphereGeometry(0.08, 16, 16);
+        const nodeMat = new THREE.MeshBasicMaterial({
+            color: 0x6366f1,
+            transparent: true,
+            opacity: 0.8
+        });
+        
+        const nodes = [];
+        for (let i = 0; i < nodeCount; i++) {
+            const mesh = new THREE.Mesh(nodeGeom, nodeMat);
+            mesh.position.set(
+                (Math.random() - 0.5) * 4,
+                0,
+                (Math.random() - 0.5) * 4
+            );
+            scene.add(mesh);
+            nodes.push({
+                mesh: mesh,
+                speed: 0.5 + Math.random() * 1.5,
+                phase: Math.random() * Math.PI
+            });
+        }
+
+        let mouseX = 0, targetX = 0;
+        document.addEventListener('mousemove', (e) => {
+            const hw = window.innerWidth / 2;
+            targetX = (e.clientX - hw) * 0.0003;
+        });
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            // Rotate grid slightly
+            gridHelper.rotation.y = time * 0.05;
+
+            // Expand ring scanner
+            const ringScale = (time * 1.2) % 3;
+            ring.scale.set(ringScale * 10, ringScale * 10, 1);
+            ring.material.opacity = Math.max(0, 1.0 - (ringScale / 3));
+
+            // Float nodes
+            nodes.forEach(node => {
+                node.mesh.position.y = Math.sin(time * node.speed + node.phase) * 0.15;
+            });
+
+            mouseX += (targetX - mouseX) * 0.05;
+            scene.rotation.y = mouseX;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    }
+
+    // ChildGuard AI URL Blacklist Client Handling
+    (() => {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        const blockedForm = document.getElementById('block-url-form');
+        const blockedInput = document.getElementById('blocked-domain-input');
+        const blockedListContainer = document.getElementById('blocked-domains-list');
+
+        if (!blockedForm || !blockedInput || !blockedListContainer || !csrfToken) return;
+
+        async function loadBlockedDomains() {
+            try {
+                const res = await fetch('/api/blocked-urls');
+                const list = await res.json();
+                renderBlockedDomains(list);
+            } catch (e) {
+                console.error("Error loading blocked domains:", e);
+            }
+        }
+
+        function renderBlockedDomains(list) {
+            blockedListContainer.innerHTML = '';
+            if (!list || list.length === 0) {
+                blockedListContainer.innerHTML = '<div class="text-xs text-slate-500 italic text-center py-2">No domains blocked.</div>';
+                return;
+            }
+            list.forEach(domain => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300';
+                
+                const span = document.createElement('span');
+                span.className = 'text-white font-mono font-semibold';
+                span.textContent = domain;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'text-red-400 hover:text-red-300 font-bold transition';
+                btn.textContent = 'Remove';
+                btn.addEventListener('click', () => deleteDomain(domain));
+
+                div.appendChild(span);
+                div.appendChild(btn);
+                blockedListContainer.appendChild(div);
+            });
+        }
+
+        async function addDomain(domain) {
+            try {
+                const res = await fetch('/api/blocked-urls', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        domain,
+                        csrfmiddlewaretoken: csrfToken
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    blockedInput.value = '';
+                    renderBlockedDomains(data.list);
+                } else {
+                    alert(data.error || 'Failed to add domain');
+                }
+            } catch (e) {
+                console.error("Error adding domain:", e);
+            }
+        }
+
+        async function deleteDomain(domain) {
+            try {
+                const res = await fetch('/api/blocked-urls/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        domain,
+                        csrfmiddlewaretoken: csrfToken
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    renderBlockedDomains(data.list);
+                } else {
+                    alert(data.error || 'Failed to delete domain');
+                }
+            } catch (e) {
+                console.error("Error deleting domain:", e);
+            }
+        }
+
+        blockedForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const domain = blockedInput.value.trim();
+            if (domain) {
+                addDomain(domain);
+            }
+        });
+
+        loadBlockedDomains();
+    })();
+</script>
+{% endblock %}

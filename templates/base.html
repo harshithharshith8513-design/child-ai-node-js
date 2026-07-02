@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}ChildGuard AI helps families build safer digital habits.{% endblock %}">
+    <title>{% block title %}ChildGuard AI{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts: Plus Jakarta Sans & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            blue: "#8b5cf6",
+                            cyan: "#d946ef",
+                            purple: "#6366f1",
+                            dark: "#09070f",
+                            darker: "#05040a",
+                            slate: "#161127",
+                            glow: "rgba(217, 70, 239, 0.15)"
+                        },
+                        guardian: {
+                            50: "#faf5ff",
+                            100: "#f3e8ff",
+                            500: "#8b5cf6",
+                            600: "#7c3aed",
+                            700: "#6d28d9",
+                            900: "#4c1d95"
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Outfit"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="selection:bg-fuchsia-500/30 selection:text-fuchsia-200 flex min-h-screen flex-col bg-cyber-dark text-slate-100 antialiased h-full">
+
+    <!-- Glowing Background Elements -->
+    <div class="fixed top-[-10%] left-[-10%] -z-10 h-[50vw] w-[50vw] rounded-full bg-violet-900/10 blur-[120px]"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] -z-10 h-[50vw] w-[50vw] rounded-full bg-fuchsia-900/10 blur-[120px]"></div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 glass-header">
+        <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4" aria-label="Primary navigation">
+            <a href="/app" class="flex items-center gap-3 font-display text-2xl font-black tracking-tight text-white hover:opacity-90 transition-opacity">
+                <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white shadow-lg shadow-violet-500/20" aria-hidden="true">
+                    <i data-lucide="shield-check" class="h-6 w-6"></i>
+                </span>
+                <span>ChildGuard <span class="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">AI</span></span>
+            </a>
+
+            <button id="menu-toggle" type="button" class="rounded-lg p-2 text-slate-400 hover:bg-violet-950/50 md:hidden" aria-controls="mobile-menu" aria-expanded="false">
+                <span class="sr-only">Toggle menu</span>
+                <i data-lucide="menu" class="h-6 w-6"></i>
+            </button>
+
+            {% if user %}
+                <a href="/app" class="nav-link {% if currentUrlName == 'home' %}nav-link-active{% endif %}">Home</a>
+                <a href="/dashboard" class="nav-link {% if currentUrlName == 'dashboard' %}nav-link-active{% endif %}">Dashboard</a>
+                <a href="/profile" class="nav-link {% if currentUrlName == 'profile' %}nav-link-active{% endif %}">Profile</a>
+                <a href="/resources" class="nav-link {% if currentUrlName == 'resources' %}nav-link-active{% endif %}">Resources</a>
+                <a href="/assistant" class="nav-link {% if currentUrlName == 'assistant' %}nav-link-active{% endif %}">AI Bot</a>
+                <a href="/about" class="nav-link {% if currentUrlName == 'about' %}nav-link-active{% endif %}">About</a>
+                {% if user.username == 'admin' %}
+                <a href="/admin-dashboard" class="nav-link {% if currentUrlName == 'admin-dashboard' %}nav-link-active{% endif %}">Admin Control</a>
+                {% endif %}
+                <form method="post" action="/logout" class="ml-2">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrfToken }}">
+                    <button type="submit" class="btn-secondary py-2 px-4 text-xs">Log out</button>
+                </form>
+            {% else %}
+                <a href="/login" class="nav-link">Sign In</a>
+            {% endif %}
+            </div>
+        </nav>
+
+        <div id="mobile-menu" class="hidden border-t border-slate-800 bg-cyber-darker px-4 py-3 md:hidden">
+            {% if user %}
+                <a href="/app" class="mobile-nav-link">Home</a>
+                <a href="/dashboard" class="mobile-nav-link">Dashboard</a>
+                <a href="/profile" class="mobile-nav-link">Profile</a>
+                <a href="/resources" class="mobile-nav-link">Resources</a>
+                <a href="/assistant" class="mobile-nav-link">AI Bot</a>
+                <a href="/about" class="mobile-nav-link">About</a>
+                {% if user.username == 'admin' %}
+                <a href="/admin-dashboard" class="mobile-nav-link">Admin Control</a>
+                {% endif %}
+                <form method="post" action="/logout" class="mt-2 pt-2 border-t border-slate-800">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrfToken }}">
+                    <button type="submit" class="mobile-nav-link w-full text-left">Log out</button>
+                </form>
+            {% else %}
+                <a href="/login" class="mobile-nav-link">Sign In</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cyber-darker border-t border-slate-900 text-slate-400 py-10 mt-auto">
+        <div class="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-3">
+            <div>
+                <p class="text-lg font-bold text-white font-display">ChildGuard AI</p>
+                <p class="mt-3 max-w-sm text-sm leading-6 text-slate-400">Thoughtful digital safety tools that help parents protect, teach, and stay connected with their children.</p>
+            </div>
+            <div>
+                <p class="font-semibold text-white font-display">Quick links</p>
+                <div class="mt-3 flex flex-col gap-2 text-sm">
+                    <a href="/dashboard" class="hover:text-white transition">Guardian dashboard</a>
+                    <a href="/resources" class="hover:text-white transition">Safety resources</a>
+                    <a href="/about" class="hover:text-white transition">Our mission</a>
+                </div>
+            </div>
+            <div>
+                <p class="font-semibold text-white font-display">Emergency reminder</p>
+                <p class="mt-3 text-sm leading-6 text-slate-400">Browser alerts are demonstrations. Contact local emergency services when a child is in immediate danger.</p>
+            </div>
+        </div>
+        <div class="border-t border-slate-900 mt-8 pt-6 text-center text-xs text-slate-500">
+            &copy; {{ currentYear }} ChildGuard AI. Built for safer digital childhoods.
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

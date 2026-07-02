@@ -1,0 +1,7 @@
+RUN SERVER: npm start (Runs Node.js server on http://localhost:8000)
+DEV SERVER: npm run dev (Runs server with auto-reload on file edits)
+POWERSELL START: ./start_server.ps1 (Checks dependencies and boots the server)
+INSTALL DEPENDENCIES: npm install (Downloads required Node.js libraries)
+CREATE NEW USER: node create_user.js <username> <password> "<fullname>" (Creates a database account)
+DEFAULT LOGIN: Username: admin | Password: admin123 (Auto-created superuser credentials)
+CHECK USERS IN DB: sqlite3 db.sqlite3 "SELECT username, fullname FROM users;" (Lists all database accounts)

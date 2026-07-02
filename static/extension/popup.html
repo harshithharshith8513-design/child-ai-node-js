@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ChildGuard AI Blocker</title>
+  <style>
+    :root {
+      --cyber-purple: #8b5cf6;
+      --cyber-cyan: #d946ef;
+      --cyber-dark: #09070f;
+      --cyber-darker: #05040a;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 16px;
+      background-color: var(--cyber-darker);
+      color: var(--text-main);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--cyber-purple), var(--cyber-cyan));
+      font-weight: bold;
+      color: #fff;
+    }
+    .title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 10px;
+      color: var(--cyber-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .status-panel {
+      background: rgba(15, 10, 25, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .status-row:last-child {
+      margin-bottom: 0;
+    }
+    .badge {
+      background-color: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .sync-btn {
+      width: 100%;
+      background: linear-gradient(90deg, var(--cyber-purple), var(--cyber-cyan));
+      border: none;
+      color: #fff;
+      padding: 8px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .sync-btn:hover {
+      opacity: 0.9;
+    }
+    .sync-btn:active {
+      transform: scale(0.99);
+    }
+    .domains-header {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .domains-list {
+      max-height: 150px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 12px;
+    }
+    .domain-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .domain-item:last-child {
+      border-bottom: none;
+    }
+    .empty-message {
+      color: var(--text-muted);
+      text-align: center;
+      padding: 12px 0;
+      font-style: italic;
+    }
+    /* Scrollbar */
+    .domains-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    .domains-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .domains-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">CG</div>
+    <div>
+      <h1 class="title">ChildGuard AI</h1>
+      <span class="subtitle">URL Blocker Active</span>
+    </div>
+  </div>
+
+  <div class="status-panel">
+    <div class="status-row">
+      <span>Shield Protection</span>
+      <span class="badge">ON</span>
+    </div>
+    <div class="status-row" style="margin-top: 8px;">
+      <span style="color: var(--text-muted); font-size: 11px;">Last Synced:</span>
+      <span id="sync-time" style="font-size: 11px; font-family: monospace;">Never</span>
+    </div>
+    <div style="margin-top: 12px;">
+      <button id="sync-btn" class="sync-btn">Sync from Server</button>
+    </div>
+  </div>
+
+  <div class="domains-header">Blocked Domains (<span id="domains-count">0</span>)</div>
+  <div id="domains-list" class="domains-list">
+    <div class="empty-message">No domains blocked.</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

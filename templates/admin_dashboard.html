@@ -1,0 +1,496 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Control Center | ChildGuard AI{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="section-shell py-14">
+        <span class="eyebrow text-fuchsia-400">System Command</span>
+        <h1 class="section-title">Administrative Command Center</h1>
+        <p class="section-copy">Manage active supervisor identities, ingest bulk registries, export secure configuration maps, and track central database volumes.</p>
+    </div>
+</section>
+
+<section class="section-shell max-w-7xl mx-auto px-6 mb-16">
+    <!-- Top System Metrics Cards Grid -->
+    <div class="grid gap-6 md:grid-cols-3 mb-10">
+        <!-- Card 1: Users count -->
+        <div class="panel-card p-6 border border-slate-800 bg-slate-950/40 relative overflow-hidden flex items-center justify-between group hover:border-violet-500/30 transition duration-300">
+            <div class="absolute -right-4 -bottom-4 text-slate-900/20 text-8xl font-black select-none pointer-events-none group-hover:text-violet-500/5 transition duration-300">U</div>
+            <div>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Supervisors & Guardians</span>
+                <h3 id="users-metric" class="text-4xl font-extrabold text-white mt-1">{{ users | length }}</h3>
+                <p class="text-[11px] text-slate-400 mt-1">Authorized access controllers</p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-violet-950/40 border border-violet-800/30 flex items-center justify-center text-violet-400">
+                <i data-lucide="users" class="h-6 w-6"></i>
+            </div>
+        </div>
+
+        <!-- Card 2: Biometric profiles count -->
+        <div class="panel-card p-6 border border-slate-800 bg-slate-950/40 relative overflow-hidden flex items-center justify-between group hover:border-fuchsia-500/30 transition duration-300">
+            <div class="absolute -right-4 -bottom-4 text-slate-900/20 text-8xl font-black select-none pointer-events-none group-hover:text-fuchsia-500/5 transition duration-300">P</div>
+            <div>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Enrolled Face Profiles</span>
+                <h3 class="text-4xl font-extrabold text-white mt-1">{{ profilesCount }}</h3>
+                <p class="text-[11px] text-slate-400 mt-1">Local biometric templates</p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-fuchsia-950/40 border border-fuchsia-800/30 flex items-center justify-center text-fuchsia-400">
+                <i data-lucide="scan-face" class="h-6 w-6"></i>
+            </div>
+        </div>
+
+        <!-- Card 3: Blocked domains count -->
+        <div class="panel-card p-6 border border-slate-800 bg-slate-950/40 relative overflow-hidden flex items-center justify-between group hover:border-pink-500/30 transition duration-300">
+            <div class="absolute -right-4 -bottom-4 text-slate-900/20 text-8xl font-black select-none pointer-events-none group-hover:text-pink-500/5 transition duration-300">D</div>
+            <div>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Blocked Web Domains</span>
+                <h3 class="text-4xl font-extrabold text-white mt-1">{{ blockedDomainsCount }}</h3>
+                <p class="text-[11px] text-slate-400 mt-1">DNR block boundaries active</p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-pink-950/40 border border-pink-800/30 flex items-center justify-center text-pink-400">
+                <i data-lucide="shield-ban" class="h-6 w-6"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout Grid -->
+    <div class="grid gap-8 lg:grid-cols-[1.1fr_.9fr] items-start">
+        <!-- Left: Users registry management -->
+        <div class="panel-card border border-slate-800 p-6 space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-900 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white">Supervisor Directory</h2>
+                    <p class="text-xs text-slate-500">Add or remove guardian accounts that control family dashboards.</p>
+                </div>
+                <button id="open-add-user-btn" class="px-3 py-1.5 bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-500 hover:to-fuchsia-400 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 shadow-lg shadow-violet-500/10">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Add User
+                </button>
+            </div>
+
+            <!-- Table of users -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-850 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-3 px-4">User ID</th>
+                            <th class="py-3 px-4">Username</th>
+                            <th class="py-3 px-4">Full Name</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body" class="divide-y divide-slate-900/60 text-sm">
+                        {% for u in users %}
+                        <tr class="hover:bg-slate-950/30 transition text-slate-300">
+                            <td class="py-3.5 px-4 font-mono text-xs text-slate-500">USR-{{ u.id }}</td>
+                            <td class="py-3.5 px-4 font-bold text-white">{{ u.username }}</td>
+                            <td class="py-3.5 px-4 text-xs">{{ u.fullname }}</td>
+                            <td class="py-3.5 px-4 text-right">
+                                {% if u.username == 'admin' %}
+                                <span class="text-[10px] bg-slate-900 border border-slate-800 text-slate-500 px-2 py-0.5 rounded font-mono uppercase">System Core</span>
+                                {% else %}
+                                <button class="text-xs text-rose-400 hover:text-rose-300 hover:underline delete-user-btn" data-id="{{ u.id }}">Remove</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right: Ingestion tools & 3D visualization -->
+        <div class="space-y-6">
+            <!-- 3D Node visualizer -->
+            <div class="panel-card relative overflow-hidden flex flex-col justify-center items-center text-center p-6 border border-slate-800">
+                <div class="absolute w-[200px] h-[200px] bg-violet-500/10 rounded-full blur-[60px] -z-10 animate-pulse"></div>
+                <h3 class="text-xs font-bold text-slate-400 font-display uppercase tracking-wider mb-2">Administrative Hub Core</h3>
+                <div id="admin-canvas-container" class="w-full h-[220px] cursor-grab active:cursor-grabbing"></div>
+                <p class="text-[10px] text-slate-500 font-mono mt-2">ACTIVE SUPERUSER CORE VERIFICATION STACK ACTIVE</p>
+            </div>
+
+            <!-- Ingestion and Exports tools panel -->
+            <div class="panel-card border border-slate-800 p-6 space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white">System Data Tools</h2>
+                    <p class="text-xs text-slate-500">Perform bulk configurations and download database snapshots.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Export Users -->
+                    <a href="/admin/export-users" class="flex flex-col items-center justify-center p-4 border border-slate-800 bg-slate-950/60 rounded-2xl hover:border-violet-500/30 transition text-center group">
+                        <div class="h-10 w-10 rounded-xl bg-slate-900 border border-slate-850 flex items-center justify-center text-violet-400 mb-2 group-hover:scale-105 transition">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xs font-bold text-white">Export Users</span>
+                        <span class="text-[9px] text-slate-500 mt-1">Download accounts (.json)</span>
+                    </a>
+
+                    <!-- Export Profiles -->
+                    <a href="/admin/export-profiles" class="flex flex-col items-center justify-center p-4 border border-slate-800 bg-slate-950/60 rounded-2xl hover:border-fuchsia-500/30 transition text-center group">
+                        <div class="h-10 w-10 rounded-xl bg-slate-900 border border-slate-850 flex items-center justify-center text-fuchsia-400 mb-2 group-hover:scale-105 transition">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xs font-bold text-white">Export Biometrics</span>
+                        <span class="text-[9px] text-slate-500 mt-1">Download profiles (.json)</span>
+                    </a>
+                </div>
+
+                <!-- Bulk upload upload zone -->
+                <div class="border-t border-slate-900 pt-6">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Bulk User Ingestion</span>
+                    <div id="drop-zone" class="border border-dashed border-slate-800 bg-slate-950/40 rounded-2xl p-6 text-center hover:border-fuchsia-500/40 transition duration-300 cursor-pointer relative">
+                        <input type="file" id="bulk-file-input" accept=".json" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <div class="flex flex-col items-center">
+                            <div class="h-10 w-10 rounded-full bg-slate-900 border border-slate-850 flex items-center justify-center text-slate-400 mb-3" id="drop-icon-container">
+                                <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-300">Drag & drop Users JSON</span>
+                            <span class="text-[10px] text-slate-500 mt-1">Format: Array of {username, password, fullname}</span>
+                        </div>
+                    </div>
+                    <div id="bulk-upload-status" class="mt-2 text-xs font-mono text-center text-slate-500"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Add User Modal dialog overlay -->
+<div id="add-user-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="max-w-md w-full glass-panel border border-slate-800 rounded-3xl p-8 relative glow-violet m-4">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-600 to-fuchsia-500"></div>
+        <button id="close-modal-btn" class="absolute top-4 right-4 p-1.5 rounded-lg text-slate-500 hover:bg-slate-900 hover:text-white transition">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+        
+        <h3 class="text-xl font-bold text-white mb-2">Create Supervisor Account</h3>
+        <p class="text-xs text-slate-450 mb-6">Create a new guardian identity to log in and configure safety layers.</p>
+
+        <form id="add-user-form" class="space-y-4" novalidate>
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrfToken }}">
+            <label class="form-label">Username
+                <input id="new-username" class="form-input" type="text" minlength="5" required placeholder="e.g. jdoe2026">
+            </label>
+            <label class="form-label">Full Name
+                <input id="new-fullname" class="form-input" type="text" required placeholder="e.g. Jane Doe">
+            </label>
+            <label class="form-label">Password
+                <input id="new-password" class="form-input" type="password" minlength="8" required placeholder="••••••••">
+            </label>
+            <div class="flex gap-3 pt-2">
+                <button type="button" id="cancel-modal-btn" class="btn-secondary flex-1 py-2.5">Cancel</button>
+                <button type="submit" class="btn-primary flex-1 py-2.5">Create User</button>
+            </div>
+            <div id="modal-status" class="text-xs text-red-400 font-mono mt-2 text-center"></div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const csrfToken = "{{ csrfToken }}";
+    const addUserForm = document.getElementById("add-user-form");
+    const tableBody = document.getElementById("users-table-body");
+    const usersMetric = document.getElementById("users-metric");
+    
+    // Modal controls
+    const modal = document.getElementById("add-user-modal");
+    const openModalBtn = document.getElementById("open-add-user-btn");
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    const cancelModalBtn = document.getElementById("cancel-modal-btn");
+    const modalStatus = document.getElementById("modal-status");
+
+    function showModal() {
+        modal.classList.remove("hidden");
+        setTimeout(() => modal.classList.add("opacity-100"), 10);
+    }
+
+    function hideModal() {
+        modal.classList.remove("opacity-100");
+        setTimeout(() => {
+            modal.classList.add("hidden");
+            addUserForm.reset();
+            modalStatus.textContent = "";
+        }, 300);
+    }
+
+    openModalBtn.addEventListener("click", showModal);
+    closeModalBtn.addEventListener("click", hideModal);
+    cancelModalBtn.addEventListener("click", hideModal);
+
+    // Render updated table contents
+    function renderUsersList(users) {
+        tableBody.innerHTML = "";
+        usersMetric.textContent = users.length;
+
+        users.forEach(u => {
+            const row = document.createElement("tr");
+            row.className = "hover:bg-slate-950/30 transition text-slate-300";
+            row.innerHTML = `
+                <td class="py-3.5 px-4 font-mono text-xs text-slate-500">USR-${u.id}</td>
+                <td class="py-3.5 px-4 font-bold text-white">${u.username}</td>
+                <td class="py-3.5 px-4 text-xs">${u.fullname}</td>
+                <td class="py-3.5 px-4 text-right">
+                    ${u.username === 'admin' 
+                        ? `<span class="text-[10px] bg-slate-900 border border-slate-800 text-slate-500 px-2 py-0.5 rounded font-mono uppercase">System Core</span>`
+                        : `<button class="text-xs text-rose-400 hover:text-rose-300 hover:underline delete-user-btn" data-id="${u.id}">Remove</button>`
+                    }
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Add User Action
+    addUserForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("new-username").value.trim();
+        const fullname = document.getElementById("new-fullname").value.trim();
+        const password = document.getElementById("new-password").value;
+
+        if (!username || !fullname || !password) {
+            modalStatus.textContent = "Please fill out all fields.";
+            return;
+        }
+
+        try {
+            const response = await fetch('/admin/add-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-csrftoken': csrfToken
+                },
+                body: JSON.stringify({ username, fullname, password })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                renderUsersList(data.users);
+                hideModal();
+            } else {
+                modalStatus.textContent = data.error || "Failed to create user.";
+            }
+        } catch (err) {
+            modalStatus.textContent = "Network error. Try again.";
+        }
+    });
+
+    // Delete User Action delegation
+    tableBody.addEventListener("click", async (e) => {
+        if (e.target.classList.contains("delete-user-btn")) {
+            const userId = e.target.dataset.id;
+            if (!confirm("Are you sure you want to delete this supervisor account? Associated face profiles will be purged.")) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/delete-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrftoken': csrfToken
+                    },
+                    body: JSON.stringify({ userId })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    renderUsersList(data.users);
+                } else {
+                    alert(data.error || "Failed to delete user.");
+                }
+            } catch (err) {
+                alert("Network error deleting user.");
+            }
+        }
+    });
+
+    // Bulk JSON Upload Action
+    const dropZone = document.getElementById("drop-zone");
+    const bulkInput = document.getElementById("bulk-file-input");
+    const bulkStatus = document.getElementById("bulk-upload-status");
+    const dropIconContainer = document.getElementById("drop-icon-container");
+
+    bulkInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) handleJsonUpload(file);
+    });
+
+    function handleJsonUpload(file) {
+        if (file.type !== "application/json" && !file.name.endsWith(".json")) {
+            bulkStatus.textContent = "Error: File must be in JSON format.";
+            bulkStatus.className = "mt-2 text-xs font-mono text-center text-rose-400";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const usersList = JSON.parse(event.target.result);
+                bulkStatus.textContent = "Sending batch data to server...";
+                bulkStatus.className = "mt-2 text-xs font-mono text-center text-violet-400";
+
+                const response = await fetch('/admin/bulk-upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrftoken': csrfToken
+                    },
+                    body: JSON.stringify({ users: usersList })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    bulkStatus.innerHTML = `Successfully uploaded!<br><span class="text-emerald-400">Created: ${data.createdCount}</span> | <span class="text-amber-400">Skipped: ${data.skippedCount}</span>`;
+                    bulkStatus.className = "mt-2 text-xs font-mono text-center text-slate-400";
+                    renderUsersList(data.users);
+                } else {
+                    bulkStatus.textContent = data.error || "Ingestion rejected by server.";
+                    bulkStatus.className = "mt-2 text-xs font-mono text-center text-rose-400";
+                }
+            } catch (err) {
+                bulkStatus.textContent = "Error parsing JSON content.";
+                bulkStatus.className = "mt-2 text-xs font-mono text-center text-rose-400";
+            }
+        };
+        reader.readAsText(file);
+    }
+});
+
+// Three.js 3D Core administrative Matrix Visualization
+const container = document.getElementById('admin-canvas-container');
+if (container) {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.z = 8;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+
+    // Administrative core mesh structure (octahedron)
+    const coreGeom = new THREE.OctahedronGeometry(1.6, 0);
+    const coreMat = new THREE.MeshBasicMaterial({
+        color: 0x8b5cf6,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.7,
+        blending: THREE.AdditiveBlending
+    });
+    const coreMesh = new THREE.Mesh(coreGeom, coreMat);
+    scene.add(coreMesh);
+
+    // Second inner core (opposite rotation)
+    const innerGeom = new THREE.IcosahedronGeometry(0.8, 0);
+    const innerMat = new THREE.MeshBasicMaterial({
+        color: 0xd946ef,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.45
+    });
+    const innerMesh = new THREE.Mesh(innerGeom, innerMat);
+    scene.add(innerMesh);
+
+    // Orbiting particle systems
+    const orbitCount = 40;
+    const particleGeom = new THREE.BufferGeometry();
+    const positions = new Float32Array(orbitCount * 3);
+    const colors = new Float32Array(orbitCount * 3);
+    
+    const purple = new THREE.Color(0x8b5cf6);
+    const fuchsia = new THREE.Color(0xd946ef);
+
+    for (let i = 0; i < orbitCount; i++) {
+        // Orbit sphere coords
+        const u = Math.random();
+        const v = Math.random();
+        const theta = u * 2.0 * Math.PI;
+        const phi = Math.acos(2.0 * v - 1.0);
+        const radius = 2.4 + Math.random() * 0.8;
+        
+        positions[i*3] = radius * Math.sin(phi) * Math.cos(theta);
+        positions[i*3+1] = radius * Math.sin(phi) * Math.sin(theta);
+        positions[i*3+2] = radius * Math.cos(phi);
+
+        // Interpolate colors
+        const mix = purple.clone().lerp(fuchsia, Math.random());
+        colors[i*3] = mix.r;
+        colors[i*3+1] = mix.g;
+        colors[i*3+2] = mix.b;
+    }
+
+    particleGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particleGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    // Custom Canvas Round dot material
+    const canvasMat = document.createElement('canvas');
+    canvasMat.width = 16;
+    canvasMat.height = 16;
+    const ctx = canvasMat.getContext('2d');
+    const grad = ctx.createRadialGradient(8,8,0, 8,8,8);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,16,16);
+    
+    const texture = new THREE.CanvasTexture(canvasMat);
+    const pointsMat = new THREE.PointsMaterial({
+        size: 0.25,
+        map: texture,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+    
+    const particles = new THREE.Points(particleGeom, pointsMat);
+    scene.add(particles);
+
+    // Mouse movement response
+    let mouseX = 0, mouseY = 0;
+    let targetX = 0, targetY = 0;
+    
+    document.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        targetX = (e.clientX - cx) * 0.002;
+        targetY = (e.clientY - cy) * 0.002;
+    });
+
+    const clock = new THREE.Clock();
+
+    function renderLoop() {
+        requestAnimationFrame(renderLoop);
+        const elapsed = clock.getElapsedTime();
+
+        // Rotate cores
+        coreMesh.rotation.y = elapsed * 0.2;
+        coreMesh.rotation.x = elapsed * 0.15;
+        
+        innerMesh.rotation.y = -elapsed * 0.3;
+        innerMesh.rotation.z = elapsed * 0.1;
+
+        particles.rotation.y = elapsed * 0.08;
+
+        // Smooth rotation to cursor
+        mouseX += (targetX - mouseX) * 0.05;
+        mouseY += (targetY - mouseY) * 0.05;
+
+        scene.rotation.y = mouseX;
+        scene.rotation.x = mouseY;
+
+        renderer.render(scene, camera);
+    }
+    renderLoop();
+
+    window.addEventListener('resize', () => {
+        if (!container.clientWidth || !container.clientHeight) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+}
+</script>
+{% endblock %}
