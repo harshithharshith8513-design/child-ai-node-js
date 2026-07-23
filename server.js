@@ -44,6 +44,8 @@ nunjucksEnv.addGlobal('currentYear', new Date().getFullYear());
 
 // Static Files Mounting
 app.use('/static', express.static(path.join(__dirname, 'static')));
+app.use('/dist', express.static(path.join(__dirname, 'static/dist')));
+app.use('/react_app', express.static(path.join(__dirname, 'react_app')));
 app.use(express.static(path.join(__dirname, 'static')));
 
 // Middleware to ensure user is authenticated
@@ -346,6 +348,15 @@ app.get('/about', requireLogin, (req, res) => {
     res.render('about.html', { currentUrlName: 'about', user: req.session.user });
 });
 
+// Route: ID Protector Card
+app.get('/id-protector', requireLogin, (req, res) => {
+    res.render('id_card.html', { currentUrlName: 'id-protector', user: req.session.user });
+});
+
+app.get('/id-card', requireLogin, (req, res) => {
+    res.render('id_card.html', { currentUrlName: 'id-protector', user: req.session.user });
+});
+
 // Route: Gatekeeper Biometric Bypass Page
 app.get('/gatekeeper', (req, res) => {
     const domain = req.query.domain || '';
@@ -463,6 +474,40 @@ app.post('/api/blocked-urls/delete', requireLogin, verifyCsrf, async (req, res) 
         const rows = await dbHelper.all("SELECT domain FROM blocked_domains");
         const list = rows.map(r => r.domain);
         return res.json({ success: true, list });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+// API Endpoint: GET Saved ID Cards
+app.get('/api/id-cards', requireLogin, async (req, res) => {
+    try {
+        const rows = await dbHelper.all("SELECT * FROM id_cards WHERE user_id = ? ORDER BY id DESC", [req.session.user.id]);
+        const list = rows.map(r => ({
+            id: r.id,
+            card_type: r.card_type,
+            card_data: JSON.parse(r.card_data),
+            created_at: r.created_at
+        }));
+        return res.json({ success: true, cards: list });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+// API Endpoint: POST Save ID Card
+app.post('/api/id-cards', requireLogin, verifyCsrf, async (req, res) => {
+    try {
+        const { card_type, card_data } = req.body;
+        if (!card_type || !card_data) {
+            return res.status(400).json({ error: "Missing card_type or card_data" });
+        }
+        const dataStr = typeof card_data === 'string' ? card_data : JSON.stringify(card_data);
+        const result = await dbHelper.run(
+            "INSERT INTO id_cards (user_id, card_type, card_data) VALUES (?, ?, ?)",
+            [req.session.user.id, card_type, dataStr]
+        );
+        return res.json({ success: true, cardId: result.lastID });
     } catch (e) {
         return res.status(500).json({ error: e.message });
     }

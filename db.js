@@ -77,6 +77,16 @@ async function initDb() {
         )
     `);
 
+    await run(`
+        CREATE TABLE IF NOT EXISTS id_cards (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            card_type TEXT NOT NULL,
+            card_data TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
     // Check if username column exists in profiles table
     try {
         const columns = await all("PRAGMA table_info(profiles)");
